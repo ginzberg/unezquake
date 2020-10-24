@@ -82,6 +82,8 @@ static void Dev_PhysicsNormalShow(void);
 static void Cl_Reset_Min_fps_f(void);
 void CL_QWURL_ProcessChallenge(const char *parameters);
 
+void Inlay_Update(void);
+
 // cl_input.c
 void onchange_pext_serversideweapon(cvar_t* var, char* value, qbool* cancel);
 
@@ -1076,6 +1078,7 @@ void CL_DNS_f(void)
 
 void SCR_ClearShownick(void);
 void SCR_ClearTeamInfo(void);
+void SCR_ClearInlay(void);
 void SCR_ClearWeaponStats(void);
 
 void CL_ClearState (void) 
@@ -1128,6 +1131,7 @@ void CL_ClearState (void)
 
 	// Clear teaminfo structs
 	SCR_ClearTeamInfo();
+    SCR_ClearInlay();
 
 	// Clear weapon stats structs
 	SCR_ClearWeaponStats();
@@ -2539,6 +2543,8 @@ void CL_Frame(double time)
 #ifdef WITH_IRC
 	IRC_Update();
 #endif
+    
+    Inlay_Update();
 
 	SB_ExecuteQueuedTriggers();
 

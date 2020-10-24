@@ -56,6 +56,7 @@ void SCR_DrawHud(void);
 void SCR_DrawClocks(void);
 void R_SetupFrame(void);
 void SCR_Draw_TeamInfo(void);
+void SCR_Draw_Inlay(void);
 void SCR_Draw_ShowNick(void);
 void SCR_DrawQTVBuffer(void);
 void SCR_DrawFPS(void);
@@ -777,6 +778,7 @@ static void SCR_DrawElements(void)
 					if (!sb_showscores && !sb_showteamscores)
 					{ 
 						SCR_Draw_TeamInfo();
+						SCR_Draw_Inlay();
 
 						SCR_Draw_ShowNick();
 

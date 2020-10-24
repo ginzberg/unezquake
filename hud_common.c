@@ -59,6 +59,7 @@ void SCR_HUD_DrawTracker(hud_t* hud);
 void SCR_HUD_WeaponStats(hud_t *hud);
 void WeaponStats_HUDInit(void);
 void TeamInfo_HudInit(void);
+void Inlay_HudInit(void);
 void Speed_HudInit(void);
 void TeamHold_HudInit(void);
 void Clock_HudInit(void);
@@ -976,6 +977,7 @@ void CommonDraw_Init(void)
 	Radar_HudInit();
 	WeaponStats_HUDInit();
 	TeamInfo_HudInit();
+    Inlay_HudInit();
 	TeamHold_HudInit();
 	Health_HudInit();
 	Frags_HudInit();

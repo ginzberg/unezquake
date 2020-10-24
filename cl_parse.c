@@ -50,6 +50,9 @@ int CL_LoginImageId(const char* name);
 
 void R_TranslatePlayerSkin (int playernum);
 
+void Inlay_GameStart(void);
+qbool Inlay_Handle_Message(char *s, int flags, int offset);
+
 char *svc_strings[] = {
 	"svc_bad",
 	"svc_nop",
@@ -2277,6 +2280,8 @@ void CL_ProcessServerInfo (void)
 		cl.gametime = 0;
 		cl.gamestarttime = Sys_DoubleTime();
 
+		Inlay_GameStart();
+
 		if (cls.mvdplayback) {
 			MVD_GameStart();
 		}
@@ -2846,6 +2851,11 @@ void CL_ProcessPrint (int level, char* s0)
 			return;
 		}
 
+        if (Inlay_Handle_Message(s0, flags, offset)) {
+            Com_DPrintf("Handled inlay message: %s\n", s0);
+            return;
+        }
+
 		if (flags == 2 && !TP_FilterMessage (s + offset)) {
 			Com_DPrintf("Filtered message: %s\n", s0);
 			return;
@@ -3064,7 +3074,7 @@ void CL_ParseStufftext (void)
 		}
 	}
 	else {
-		Com_DPrintf ("stufftext: %s\n", s);	
+        // Com_DPrintf ("stufftext: %s\n", s);    
 	}
 
 	if (!strncmp(s, "alias _cs", 9))

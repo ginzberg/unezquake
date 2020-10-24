@@ -352,6 +352,7 @@ HUD_OBJS := \
     hud_editor.o \
     hud_radar.o \
     hud_speed.o \
+    hud_inlay.o \
     hud_teaminfo.o \
     hud_weapon_stats.o \
     hud_autoid.o \
