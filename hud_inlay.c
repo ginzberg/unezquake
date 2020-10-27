@@ -30,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define FONT_WIDTH 8
 
+void SCR_ClearInlay(void);
+
 typedef struct inlay_player_s {
     int client; // cl.players index.
     double time; // last received update.
@@ -43,6 +45,7 @@ typedef struct inlay_player_s {
 
 inlay_player_t inlay_clients[MAX_CLIENTS];
 
+static char* inlay_last_team_update = NULL;
 static int inlay_last_update_time = 0;
 static int inlay_seconds_since_last_update = 0;
 
@@ -127,14 +130,17 @@ qbool Inlay_Parse_Message(char* msg, int player_slot)
 
 qbool Inlay_Handle_Message(char *s, int flags, int offset)
 {
-    // Only handle team messages.
-    if (!(flags & msgtype_team))
-        return false;
-
-    // Only handle if the message contains #inlay#.
+    // Only handle if #inlay#.
     char* substring = strstr(s, "#inlay#");
     if (!substring)
         return false;
+
+    // At this point always return true to hide the message,
+    // even if it didn't properly update a player.
+
+    // Only handle team messages.
+    if (!(flags & msgtype_team))
+        return true;
 
     char name[32];
     int p = 1;
@@ -145,11 +151,9 @@ qbool Inlay_Handle_Message(char *s, int flags, int offset)
     int slot = Player_NametoSlot(name);
     // Com_DPrintf("BOGO: received inlay message for player %s (%d): %s\n", name, slot, substring);
     if (slot == PLAYER_NAME_NOMATCH)
-        return false;
+        return true;
 
-    if (!Inlay_Parse_Message(substring + strlen("#inlay# "), slot))
-        return false;
-
+    Inlay_Parse_Message(substring + strlen("#inlay# "), slot);
     return true;
 }
 
@@ -200,24 +204,24 @@ static int SCR_HudDrawInlayPlayer(inlay_player_t *player, float x, int y, int ma
     float font_width = scale * FONT_WIDTH;
 
     // Powerups.
-	if (!width_only) {
+    if (!width_only) {
         extern mpic_t *sb_items[32];
         // Always draw powerups aligned on the left instead of 3 different slots per-powerup.
         float temp_x = x;
-		if (strstr(player->powerups, "quad")) {
-			Draw_SPic(temp_x, y, sb_items[5], scale / 2);
+        if (strstr(player->powerups, "quad")) {
+            Draw_SPic(temp_x, y, sb_items[5], scale / 2);
             temp_x += font_width;
         }
-		if (strstr(player->powerups, "pent")) {
-			Draw_SPic(temp_x, y, sb_items[3], scale / 2);
-		    temp_x += font_width;
+        if (strstr(player->powerups, "pent")) {
+            Draw_SPic(temp_x, y, sb_items[3], scale / 2);
+            temp_x += font_width;
         }
         if (strstr(player->powerups, "ring")) {
-			Draw_SPic(temp_x, y, sb_items[2], scale / 2);
+            Draw_SPic(temp_x, y, sb_items[2], scale / 2);
             temp_x += font_width;
         }
-	}
-	x += 3 * font_width;
+    }
+    x += 3 * font_width;
 
     // Name.
     float name_width = maxname * font_width;
@@ -296,9 +300,27 @@ void SCR_Draw_Inlay(void)
     if (!cl.teamplay || !scr_teaminlay.integer)
         return;
 
-    // FIXME: Do we need any special case handling for MVD playback mode? Prolly not.
-    // if (cls.mvdplayback)
-    //     Update_Inlay_State_For_MVD();
+    // Detect a team change.
+    char* team = NULL;
+    int tracknum;
+    if (cl.spectator && (tracknum = Cam_TrackNum()) != -1)
+        team = cl.players[tracknum].team;
+    else if (!cl.spectator)
+        team = cl.players[cl.playernum].team;
+    if (!team) {
+        // Team is now empty, clear inlay.
+        if (inlay_last_team_update) {
+            free(inlay_last_team_update);
+            inlay_last_team_update = NULL;
+            SCR_ClearInlay();
+        }
+    } else if (!inlay_last_team_update || strcmp(team, inlay_last_team_update) != 0) {
+        // Team change, clear inlay for full update.
+        if (inlay_last_team_update)
+            free(inlay_last_team_update);
+        inlay_last_team_update = strdup(team);
+        SCR_ClearInlay();
+    }
 
     int max_loc_length = bound(0, scr_teaminlay_loc_width.integer, 30);
     int max_name_length = bound(0, scr_teaminlay_name_width.integer, 15);

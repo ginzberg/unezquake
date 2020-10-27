@@ -691,7 +691,6 @@ static void MT_StartMatch(void)
 
 	// disconnect: match_forcestart resets gameclock
 	cl.standby = false;
-	cl.countdown = false;
 	cl.gametime = 0;
 	cl.gamestarttime = Sys_DoubleTime();
 
