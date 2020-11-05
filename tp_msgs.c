@@ -216,7 +216,11 @@ LOCAL char* TP_MSG_Build_Inlay_String(void)
 
 GLOBAL void TP_MSG_Report_Inlay(void)
 {
-    TP_Send_TeamSay("%s", TP_MSG_Build_Inlay_String());
+	extern qbool Inlay_Allow_Send_Message(void);
+	if (!Inlay_Allow_Send_Message())
+		return;
+
+	TP_Send_TeamSay("%s", TP_MSG_Build_Inlay_String());
 }
 
 GLOBAL void TP_Msg_Report_Inlay_f (void)
