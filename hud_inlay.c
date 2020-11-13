@@ -189,6 +189,15 @@ qbool Inlay_Allow_Send_Message(void)
     if (cl.spectator)
         return false;
 
+    // Do not send updates unless in a teamplay matchtype such as ffa.
+    if (!cl.teamplay)
+        return false;
+
+    // Do not send updates when team name is not set, such as clan arena when dead.
+    const char* team = cl.players[cl.playernum].team;
+    if (!team || strlen(team) == 0)
+        return false;
+
     // Do not send updates if ruleset disallows.
     if (Rulesets_RestrictInlay())
         return false;
